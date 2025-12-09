@@ -35,3 +35,22 @@ HAVING SUM(orders.total_amount) > 500;
 
 # We can apply a denormalization mechanism on customer and order entities
 By adding a CustomerName to the Order entitie and by adding OrderId to the Customer entite 
+
+# Write an SQL query to search for all products with the word "camera" in either the product name or description.
+<pre>
+SELECT name , cat_id , price , description
+from product 
+WHERE product_name LIKE '%camera%' 
+OR description LIKE '%camera%'
+</pre>
+
+#  Design a query to suggest popular products in the same category for the same author, excluding the Purchsed product from the recommendations
+  <pre>
+select product.name , sum(order_details.unit_price * order_details.quantity) as total_revenue
+from product join order_details on (product.id = order_details.product_id)
+where product.cat_id = (select category_id from product where product_id = 123)
+and product.author_id = (select author_id from product where product_id = 123) 
+and product.id <> 123
+group by product.id
+order by total_revenue desc
+  </pre>
