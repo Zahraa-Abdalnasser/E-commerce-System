@@ -40,8 +40,8 @@ By adding a CustomerName to the Order entitie and by adding OrderId to the Custo
 <pre>
 SELECT name , cat_id , price , description
 from product 
-WHERE product_name LIKE '%camera%' 
-OR description LIKE '%camera%'
+WHERE MATCH( name , description)
+AGAINST ('camera')
 </pre>
 
 #  Design a query to suggest popular products in the same category for the same author, excluding the Purchsed product from the recommendations
