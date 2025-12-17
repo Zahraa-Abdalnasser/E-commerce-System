@@ -99,3 +99,22 @@ FOR EACH ROW
 EXECUTE FUNCTION insert_sales_history();
 
 ```
+# A transaction query to lock the quantity field with product id = 211 for update 
+```
+BEGIN  
+SELECT stock_quantity 
+FROM product 
+WHERE product_id = 211 
+FOR UPDATE 
+COMMIT ; 
+```
+
+# A transaction query to lock the row with product id = 211 for update 
+```
+BEGIN 
+SELECT *
+FROM product 
+WHERE product_id = 211 
+FOR UPDATE 
+COMMIT ;
+```
