@@ -54,3 +54,48 @@ and product.id <> 123
 group by product.id
 order by total_revenue desc
   </pre>
+
+# A Tigger to create a sale hitory when a new order is placed 
+```
+CREATE TABLE sales_history
+(
+sale_hist_id INT PRIMARY KEY , 
+order_id INT NOT NULL , 
+customer_id INT NOT NULL , 
+product_id INT NOT NULL , 
+total_amount INT NOT NULL ,
+quantity INT NOT NULL ,
+created_at TIMESTAMP , 
+CONSTRAINT fk_items_order
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);                              
+
+CREATE OR REPLACE FUNCTION insert_sales_history()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO sales_history (
+        order_id,
+        customer_id,
+        product_id,
+        total_amount,
+        quantity
+    )
+    VALUES (
+        NEW.order_id,
+        NEW.customer_id,
+        NEW.product_id,
+        NEW.total_amount,
+        NEW.quantity
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER after_new_order
+AFTER INSERT ON orders
+FOR EACH ROW
+EXECUTE FUNCTION insert_sales_history();
+
+```
