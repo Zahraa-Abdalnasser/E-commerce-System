@@ -118,3 +118,60 @@ WHERE product_id = 211
 FOR UPDATE 
 COMMIT ;
 ```
+# optimization queries 
+```
+-- full scan on the product table 
+explain select * from product
+WHERE MATCH (product.name,product.description)
+against ('T-shirt'); 
+
+-- indexed lookup on the orders table 
+explain analyze select * from orders 
+where customer_id = 112 ;
+
+-- Write a query to find all items for a specific order_id only (without including product_id).
+explain analyze format='tree'  select product.product_name , product.price , product.description
+from order_details inner join product on (order_detail.product_id = product.product_id)
+where order_id = 122 ; 
+
+--  find the Top 5 most expensive products within a specific category name
+explain analyze format = 'tree' select product.product_id , product.product_name 
+-- where category inner join product on (category.category_id = product.category_id)
+group by category.category_id desc
+limit 5 ;
+
+-- find products where the "Price plus 14% Tax" is less than 200 ( the optimizer ignores indeces if there is an expression ) 
+explain analyze format = 'tree' select product_name , description , price 
+from product
+where price * 1.14 < 200
+
+-- top 10 expensive queries 
+SELECT * FROM performance_schema.events_statements_summary_by_digest ORDER BY SUM_TIMER_WAIT DESC LIMIT 10 ; 
+
+-- clusterd index  vs  covering index 
+EXPLAIN 
+SELECT username, email, created_at 
+FROM userinfo 
+WHERE role = 'user' AND is_active = 1 
+ORDER BY created_at DESC;
+
+CREATE INDEX idx_covering_role_active_created 
+ON userinfo (role, is_active, created_at, username, email);
+
+EXPLAIN 
+SELECT username, email, created_at 
+FROM userinfo 
+WHERE role = 'user' AND is_active = 1 
+ORDER BY created_at DESC;
+-- does it really use the index ?
+SELECT * FROM performance_schema.table_io_waits_summary_by_index_usage;
+
+-- is there any deadlock?
+SELECT * FROM performance_schema.events_errors_summary_by_account_by_error WHERE error_name = 'ER_LOCK_DEADLOCK';
+
+SHOW GLOBAL VARIABLES LIKE 'innodb_buffer_pool_size';
+
+-- calculate hit rate 
+SHOW ENGINE INNODB STATUs ; 
+
+```
