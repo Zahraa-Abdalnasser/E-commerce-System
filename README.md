@@ -175,3 +175,63 @@ SHOW GLOBAL VARIABLES LIKE 'innodb_buffer_pool_size';
 SHOW ENGINE INNODB STATUs ; 
 
 ```
+# Functions for inserting dummy data to test the database performance :
+<h2>1. Insertion in product table (2 milion rows): </h2>
+
+```
+WITH cat_ids AS (
+    SELECT array_agg(category_id) AS ids
+    FROM category
+)
+INSERT INTO product
+(product_name, price,  description, stock_quantity , category_id )
+SELECT
+    'Product ' || gs,
+	 round((random() * 900 + 100)::numeric, 2),
+    'Description for product ' || gs,
+    floor(random() * 100 + 1),
+	ids[1 + floor(random() * array_length(ids, 1))]
+FROM generate_series(1, 2000000) gs, cat_ids;
+```
+
+<h2>2. Insertion in orders table(5 milion orders): </h2>
+
+```
+WITH cust_ids AS (
+    SELECT array_agg(customer_id) AS ids
+    FROM customer
+)
+INSERT INTO orders
+(customer_id, order_date, total_amount)
+SELECT
+    ids[1 + floor(random() * array_length(ids, 1))],
+    CURRENT_DATE - floor(random() * 365)::int,
+    round((random() * 5000 + 100)::numeric, 2)
+FROM generate_series(1, 5000000) gs, cust_ids;
+```
+<h2>3. Insertion in order_details table(15 milion rows): </h2>
+
+```
+WITH order_ids AS (
+    SELECT order_id
+    FROM orders
+),
+product_data AS (
+    SELECT product_id, price
+    FROM product
+)
+INSERT INTO order_details
+(order_id, product_id, quantity, unit_price)
+SELECT
+    o.order_id,
+    p.product_id,
+    floor(random() * 10 + 1) AS quantity,
+    p.price AS unit_price
+FROM order_ids o
+JOIN LATERAL (
+    SELECT product_id, price
+    FROM product_data
+    ORDER BY random()
+    LIMIT floor(random() * 5 + 1)
+) p ON true;
+```
