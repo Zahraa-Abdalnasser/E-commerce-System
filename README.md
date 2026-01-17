@@ -235,3 +235,10 @@ JOIN LATERAL (
     LIMIT floor(random() * 5 + 1)
 ) p ON true;
 ```
+# Now, lets take some important queries and try to reduce the execution time!
+<h2>1. Write SQL Query to Retrieve the total number of products in each category? </h2>
+<h2>2. Write SQL Query to Find the top customers by total spending? </h2>
+<h2>3. Write SQL Query to List products that have low stock quantities of less than 10 quantities? </h2>
+<h2>4. 9. Write SQL Query to Calculate the revenue generated from each product category? </h2>
+
+# To see the answers click [here](Queries_optimization.pdf)
